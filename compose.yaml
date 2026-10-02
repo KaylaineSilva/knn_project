@@ -1,0 +1,6 @@
+services:
+  knn:
+    build: .
+    volumes:
+      - ./data:/data:ro
+      - ./src:/app/src
