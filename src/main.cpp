@@ -1,11 +1,58 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <algorithm>  // std::sort
+#include <limits>     // std::numeric_limits
+#include <utility>    // std::pair
 #include "H5Cpp.h"
 
-void imprimir_elementos(const std::vector<float>&data, int max_dimensoes, int limit){
+float similaridade(const float* vetor1, const float* vetor2, std::size_t vector_size){
 
-    std:: cout << "Imprimindo os primeiros " << limit << " vetores lidos:\n";
+    //Calculando a similaridade a partir do produto escalar entre os vetores
+    float dot_product = 0.0;
+
+    for(size_t i=0; i<vector_size; i++){
+        dot_product += vetor1[i] * vetor2[i];
+    }
+
+    return dot_product;
+}
+
+std::vector<std::pair<int, float>> knn_search(const std::vector<float>& similaridades, int num_vetores, int num_vetores_ler, int k) {
+    
+    std::vector<std::pair<int, float>> resultado;
+
+    for (int i = 0; i < num_vetores; i++) {
+
+        // Candidatos para os k vizinhos mais próximos do vetor i
+        std::vector<std::pair<int, float>> candidatos;
+
+        for (int j = 0; j < num_vetores_ler; j++) {
+
+            if (i == j)
+                continue;
+
+            candidatos.push_back(std::make_pair(j, similaridades[i * num_vetores_ler + j]));
+        }
+
+        // Maior similaridade primeiro
+        std::sort(candidatos.begin(), candidatos.end(), [](const std::pair<int, float>& a, const std::pair<int, float>& b) {
+                return a.second > b.second;
+            }
+        );
+
+        // Pegar somente os k primeiros
+        for (int j = 0; j < k; j++) {
+            resultado.push_back(candidatos[j]);
+        }
+    }
+
+    return resultado;
+}
+
+void imprimir_elementos(const std::vector<float>&data, size_t vector_size,int max_dimensoes, int limit){
+
+    std:: cout << "\nImprimindo os primeiros " << limit << " vetores lidos:\n\n";
 
     for (hsize_t i = 0; i <limit; i++) {
         std:: cout << "Vetor " << i << ": ";
@@ -13,7 +60,33 @@ void imprimir_elementos(const std::vector<float>&data, int max_dimensoes, int li
 
             std:: string inicio = (j == 0) ? "[" : "";
             std::string final = (j < max_dimensoes - 1) ? ", " : "]";
-            std:: cout << inicio << data[i * max_dimensoes + j] << final;
+            std:: cout << inicio << data[i * vector_size + j] << final;
+        }
+        std:: cout << "\n\n";
+    }
+}
+
+void imprimir_resultado(const std::vector<std::pair<int, float>>&resultado, int num_vetores, int k){
+    std:: cout << "Resultados da busca KNN:\n";
+
+    for (int i = 0; i < num_vetores; i++) {
+        std:: cout << "Vetor " << i << ":\n";
+        for (int j = 0; j < k; j++) {
+            int index = i * k + j;
+            std:: cout << "  Vizinho " << j + 1 << ": Vetor " << resultado[index].first
+                       << ", Similaridade: " << resultado[index].second << "\n";
+        }
+    }
+}
+
+void imprimir_similary_vector(const std::vector<float>&similarity_vector, int num_vetores, int num_vetores_ler, int limit){
+    std:: cout << "Imprimindo a matriz de similaridade:\n";
+
+    int limit_vetores = std::min(num_vetores_ler, limit);
+
+    for (int i = 0; i < num_vetores; i++) {
+        for (int j = 0; j < limit_vetores; j++) {
+            std:: cout << "(" << i << "," << j << "): " << similarity_vector[i * num_vetores_ler + j] << "\n";
         }
         std:: cout << "\n";
     }
@@ -21,7 +94,6 @@ void imprimir_elementos(const std::vector<float>&data, int max_dimensoes, int li
 
 
 int main() {
-
     //Abrindo arquivo HBF5
     const std::string path = "/data/wikipedia-small/benchmark-dev-wikipedia-bge-m3-small.h5";
     
@@ -76,9 +148,30 @@ int main() {
             dataspace                        // seleção no arquivo
         );
 
-        std::cout << "Foram lidos " << num_vectors << " vetores.\n";
+        std::cout << "\nForam lidos " << num_vectors << " vetores.\n";
 
-        imprimir_elementos(data, 10, 20);
+        imprimir_elementos(data, vector_size, 10, 20);
+
+        std::vector<float>similary_vector(6*6000,0.0f); //vetor para armazenar a similaridade de 6 vetores com os 6000 vetores lidos
+        
+        for(int i=0; i<6; i++){
+            
+            for(int j=0; j<6000; j++){
+                if(i==j) continue;
+
+                similary_vector[i*6000+j] = similaridade(data.data() + i*vector_size, data.data() + j*vector_size, vector_size);
+            }
+        }
+
+        int num_vetores_knn = 1;
+        int k = 3;
+
+
+        std::vector<std::pair<int, float>> result = knn_search(similary_vector, num_vetores_knn, 6000, k);
+
+        imprimir_similary_vector(similary_vector, 6, 6000, 10);
+
+        imprimir_resultado(result, num_vetores_knn, k);
 
     } catch (const H5::Exception& error){
         std:: cerr << "Erro ao abrir o arquivo.\n";
