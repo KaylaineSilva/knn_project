@@ -50,7 +50,7 @@ std::vector<std::pair<int, float>> knn_search(const std::vector<float>& similari
     return resultado;
 }
 
-void imprimir_elementos(const std::vector<float>&data, size_t vector_size,int max_dimensoes, int limit){
+void imprimir_elementos(const std::vector<float>&data, size_t vector_size, int max_dimensoes, int limit){
 
     std:: cout << "\nImprimindo os primeiros " << limit << " vetores lidos:\n\n";
 
@@ -128,7 +128,7 @@ int main() {
         //Como serão lidos apenas os primeiros 6000 vetores, é necessário usar a função selectHyperslab para selecionar apenas a parte do dataset que será lida
 
         hsize_t offset[2] = {0, 0}; //início da leitura (primeiro vetor)
-        hsize_t count[2] = {num_vectors, vector_size}; //quantidade de vetores a serem lidos (6000) e tamanho do vetor (dimensão do dataset
+        hsize_t count[2] = {num_vectors, vector_size}; //quantidade de vetores a serem lidos (6000) e tamanho do vetor (dimensão do dataset)
 
         dataspace.selectHyperslab(
             H5S_SELECT_SET,
