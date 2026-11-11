@@ -4,6 +4,8 @@
 #include <algorithm>  // std::sort
 #include <limits>     // std::numeric_limits
 #include <utility>    // std::pair
+#include <chrono>
+#include <iomanip>
 #include "H5Cpp.h"
 
 float similaridade(const float* vetor1, const float* vetor2, std::size_t vector_size){
@@ -150,10 +152,13 @@ int main() {
 
         std::cout << "\nForam lidos " << num_vectors << " vetores.\n";
 
-        imprimir_elementos(data, vector_size, 10, 20);
+        //imprimir_elementos(data, vector_size, 10, 20);
 
-        std::vector<float>similary_vector(6*6000,0.0f); //vetor para armazenar a similaridade de 6 vetores com os 6000 vetores lidos
+        std::vector<float>similary_vector(6*6000, 0.0f); //vetor para armazenar a similaridade de 6 vetores com os 6000 vetores lidos
         
+        /*Calculando tempo de execução da matriz*/
+        auto start_matriz = std::chrono::high_resolution_clock::now();
+
         for(int i=0; i<6; i++){
             
             for(int j=0; j<6000; j++){
@@ -163,15 +168,38 @@ int main() {
             }
         }
 
+        auto end_matriz = std::chrono::high_resolution_clock::now();
+        
+        double tempo_matriz = std::chrono::duration<double, std::milli>(end_matriz - start_matriz).count();        
+    
+
         int num_vetores_knn = 1;
         int k = 3;
 
+        /*Tempo de execução da busca KNN*/
+        auto start_knn = std::chrono::high_resolution_clock::now();
 
         std::vector<std::pair<int, float>> result = knn_search(similary_vector, num_vetores_knn, 6000, k);
 
-        imprimir_similary_vector(similary_vector, 6, 6000, 10);
+        auto end_knn = std::chrono::high_resolution_clock::now();
+        double tempo_knn = std::chrono::duration<double, std::milli>(end_knn - start_knn).count();
+
+        //imprimir_similary_vector(similary_vector, 6, 6000, 10);
 
         imprimir_resultado(result, num_vetores_knn, k);
+
+        std::cout << std::fixed << std::setprecision(3);
+
+        std::cout << "\n===== TEMPOS DE EXECUCAO =====\n";
+
+        std::cout << "Tempo da matriz: "
+                << tempo_matriz << " ms\n";
+
+        std::cout << "Tempo do KNN: "
+                << tempo_knn << " ms\n";
+
+        std::cout << "Tempo total de processamento: "
+                << tempo_matriz + tempo_knn << " ms\n";
 
     } catch (const H5::Exception& error){
         std:: cerr << "Erro ao abrir o arquivo.\n";

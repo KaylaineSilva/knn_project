@@ -9,25 +9,27 @@ set (CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(HDF5 REQUIRED COMPONENTS CXX)
 find_package(TBB REQUIRED)
 
-add_executable(knn_project
+#Adiciona o executável principal (sequencial)
+add_executable(knn_seq
     src/main.cpp
 )
 
-# Diz onde estão os headers do HDF5
-target_include_directories(
-    knn_project
-    PRIVATE
-    ${HDF5_INCLUDE_DIRS}
+# Adiciona o executável paralelo
+add_executable(knn_par
+    src/parallel_main.cpp
 )
 
-# Liga nosso executável às bibliotecas HDF5
-target_link_libraries(
-    knn_project
-    PRIVATE
+# Informar onde estão os cabeçalhos do HDF5
+target_include_directories(knn_seq PRIVATE ${HDF5_INCLUDE_DIRS})
+target_include_directories(knn_par PRIVATE ${HDF5_INCLUDE_DIRS})
+
+# Vincular as bibliotecas
+target_link_libraries(knn_seq PRIVATE
     ${HDF5_CXX_LIBRARIES}
 )
 
-target_link_libraries(knn_project PRIVATE
+#Liga o executável paralelo às bibliotecas HDF5 e TBB
+target_link_libraries(knn_par PRIVATE
     ${HDF5_CXX_LIBRARIES}
     TBB::tbb
 )
