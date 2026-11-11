@@ -48,4 +48,4 @@ Considerando as duas etapas medidas, a implementação paralela apresentou speed
 
 Os resultados sugerem que o paralelismo oferece maiores benefícios na etapa de cálculo das similaridades, enquanto sua vantagem na busca kNN, para a carga de trabalho utilizada, ainda não ficou demonstrada.
 
-Para aprofundar a análise, pode ser interessante aumentar o número de vetores consultados no kNN, verificando se os custos relacionados a execução paralela são compensados conforme a busca do knn aumenta.
+Para aprofundar a análise, pode ser interessante aumentar o número de vetores consultados no kNN, com o intuito de verificar se os custos relacionados a execução paralela são compensados conforme a busca do knn aumenta.
