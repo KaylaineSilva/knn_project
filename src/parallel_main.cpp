@@ -41,14 +41,14 @@ std::vector<std::pair<int, float>> knn_search(const std::vector<float>& similari
         std::iota(indices.begin(), indices.end(), 0); // Preenche o vetor com valores de 0 a num_vetores_ler - 2
 
         //Criando os candidatos em paralelo
-        std::transform( 
+        std::transform(  //percorre todos os índices e cria os candidatos em paralelo
             std::execution::par, //definindo a política de execução paralela
             indices.begin(),
             indices.end(),
-            candidatos.begin(),
-            [&](int pos){
+            candidatos.begin(), //definindo que o resultado da transformação será armazenado no vetor candidatos
+            [&](int pos){ //a iteração é feita sobre os índices, a posíção é armazenada em pos, e o índice j é ajustado para pular o vetor i (não considera ele próprio como candidato)
                 int j = (pos<i)? pos : pos+1; // Ajusta o índice j para pular o vetor i (não considera ele próprio como candidato)
-                return std::make_pair(j, similaridades[i * num_vetores_ler + j]);
+                return std::make_pair(j, similaridades[i * num_vetores_ler + j]); //constrói o par (índice do vizinho, similaridade) para o candidato
             }
         
         );
@@ -70,8 +70,6 @@ std::vector<std::pair<int, float>> knn_search(const std::vector<float>& similari
         }
 
     }
-
-    
 
     return resultado;
 
@@ -182,6 +180,7 @@ int main() {
         /*Paralelização do cálculo da matriz de similaridade */
         const std::size_t num_queries = 6;
 
+        /*Crialção dos índices para definir de forma mais simples quais posições da matriz cada tarefa paralela iria ficar responsável*/
         std::vector<std::size_t> indices(num_queries * num_vectors);
         std::iota(indices.begin(), indices.end(), 0); // Preenche o vetor com valores de 0 a num_queries * num_vectors - 1
 

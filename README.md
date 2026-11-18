@@ -1,3 +1,20 @@
+# Compilação 
+
+```bash 
+docker compose build
+```
+## Execução sequencial
+
+```bash
+docker compose run --rm knn ./build/knn_seq
+```
+
+## Execução paralela
+
+```bash
+docker compose run --rm knn ./build/knn_par
+```
+
 # Análise de desempenho da busca kNN sequencial e paralela
 
 ## 1. Objetivo
